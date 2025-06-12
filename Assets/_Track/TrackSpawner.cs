@@ -3,128 +3,141 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Æ®·¢À» ÁÖ±âÀûÀ¸·Î »ı¼ºÇÏ°í ¿À·¡µÈ Æ®·¢Àº Á¦°ÅÇÏ¸ç,
-/// Æ¯Á¤ Á¶°Ç¿¡ µû¶ó Àå¾Ö¹°µµ ¹èÄ¡ÇÏ´Â ±â´ÉÀ» ¼öÇà.
+/// íŠ¸ë™ì„ ì£¼ê¸°ì ìœ¼ë¡œ ìƒì„±í•˜ê³  ì˜¤ë˜ëœ íŠ¸ë™ì€ ì œê±°í•˜ë©°,
+/// íŠ¹ì • ì¡°ê±´ì— ë”°ë¼ ì¥ì• ë¬¼ë„ ë°°ì¹˜í•˜ëŠ” ê¸°ëŠ¥ì„ ìˆ˜í–‰.
 /// </summary>
 public class TrackSpawner : MonoBehaviour
 {
-    [Header("Æ®·¢ ¼³Á¤")]
-    [SerializeField] private GameObject[] trackPrefab;       // ÀÏ¹İ Æ®·¢ ÇÁ¸®ÆÕ ¹è¿­
-    [SerializeField] private GameObject safeTrackPrefab;     // ½ÃÀÛ ½Ã »ı¼ºÇÒ ¾ÈÀü Æ®·¢
-    [SerializeField] private int safeTrackCount = 2;         // ½ÃÀÛ ½Ã ¾ÈÀü Æ®·¢ °³¼ö
-    [SerializeField] private float trackLength = 10f;        // Æ®·¢ ÇÏ³ªÀÇ ±æÀÌ
-    [SerializeField] private int tracksOnScreen = 5;         // µ¿½Ã¿¡ À¯ÁöÇÒ Æ®·¢ ¼ö
+    [Header("íŠ¸ë™ ì„¤ì •")]
+    [SerializeField] private GameObject[] trackPrefab;       // ì¼ë°˜ íŠ¸ë™ í”„ë¦¬íŒ¹ ë°°ì—´
+    [SerializeField] private GameObject safeTrackPrefab;     // ì‹œì‘ ì‹œ ìƒì„±í•  ì•ˆì „ íŠ¸ë™
+    [SerializeField] private int safeTrackCount = 2;         // ì‹œì‘ ì‹œ ì•ˆì „ íŠ¸ë™ ê°œìˆ˜
+    [SerializeField] private float trackLength = 10f;        // íŠ¸ë™ í•˜ë‚˜ì˜ ê¸¸ì´
+    [SerializeField] private int tracksOnScreen = 5;         // ë™ì‹œì— ìœ ì§€í•  íŠ¸ë™ ìˆ˜
 
-    [Header("¾ÆÀÌÅÛ ¼³Á¤")]
-    [SerializeField] private GameObject obstaclePrefab;        // ÀÏ¹İ Àå¾Ö¹° ÇÁ¸®ÆÕ
-    [SerializeField] private GameObject slideObstaclePrefab;   // ½½¶óÀÌµå Àå¾Ö¹° ÇÁ¸®ÆÕ
+    [Header("ì•„ì´í…œ ì„¤ì •")]
+    [SerializeField] private GameObject obstaclePrefab;        // ì¼ë°˜ ì¥ì• ë¬¼ í”„ë¦¬íŒ¹
+    [SerializeField] private GameObject slideObstaclePrefab;   // ìŠ¬ë¼ì´ë“œ ì¥ì• ë¬¼ í”„ë¦¬íŒ¹
 
-    private float spawnZ = 0f;                        // ´ÙÀ½ Æ®·¢ »ı¼º À§Ä¡ÀÇ Z°ª
-    private List<GameObject> spawnedTracks = new();   // ÇöÀç »ı¼ºµÈ Æ®·¢ ¸®½ºÆ®
+    private float spawnZ = 0f;                        // ë‹¤ìŒ íŠ¸ë™ ìƒì„± ìœ„ì¹˜ì˜ Zê°’
+    private List<GameObject> spawnedTracks = new();   // í˜„ì¬ ìƒì„±ëœ íŠ¸ë™ ë¦¬ìŠ¤íŠ¸
 
-    // Àå¾Ö¹° °ü·Ã ¼³Á¤
-    private float lastObstacleZ = -999f;      // ¸¶Áö¸· Àå¾Ö¹° »ı¼º À§Ä¡ Z°ª
-    private float obstacleSpacing = 18f;      // Àå¾Ö¹° ÃÖ¼Ò °£°İ
-    private float spawnChance = 0.7f;         // Àå¾Ö¹° »ı¼º È®·ü
+    // ì¥ì• ë¬¼ ê´€ë ¨ ì„¤ì •
+    private float lastObstacleZ = -999f;      // ë§ˆì§€ë§‰ ì¥ì• ë¬¼ ìƒì„± ìœ„ì¹˜ Zê°’
+    private float obstacleSpacing = 18f;      // ì¥ì• ë¬¼ ìµœì†Œ ê°„ê²©
+    private float spawnChance = 0.7f;         // ì¥ì• ë¬¼ ìƒì„± í™•ë¥ 
 
-    private string currentScene;              // ÇöÀç È°¼ºÈ­µÈ ¾À ÀÌ¸§
+    private string currentScene;              // í˜„ì¬ í™œì„±í™”ëœ ì”¬ ì´ë¦„
 
     void Start()
     {
-        // ÇöÀç ¾À ÀÌ¸§ ÀúÀå
-        currentScene = SceneManager.GetActiveScene().name;
+        spawnZ += GetTrackLength(track);
+        spawnZ += GetTrackLength(track);
 
-        // ½ÃÀÛ ½Ã ¾ÈÀü Æ®·¢ ¸ÕÀú »ı¼º
+    // Calculate length of newly spawned track
+    private float GetTrackLength(GameObject track)
+    {
+        Renderer[] renderers = track.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+            return trackLength;
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+        return bounds.size.z;
+    }
+        // ì‹œì‘ ì‹œ ì•ˆì „ íŠ¸ë™ ë¨¼ì € ìƒì„±
         for (int i = 0; i < safeTrackCount; i++)
         {
             SpawnSafeTrack();
         }
 
-        // ÀÌÈÄ ÀÏ¹İ Æ®·¢ »ı¼º
+        // ì´í›„ ì¼ë°˜ íŠ¸ë™ ìƒì„±
         for (int i = 0; i < tracksOnScreen - safeTrackCount; i++)
         {
             SpawnTrack();
         }
     }
 
-    // ¾ÈÀü Æ®·¢ »ı¼º (½ÃÀÛ ÁöÁ¡ Àü¿ë)
+    // ì•ˆì „ íŠ¸ë™ ìƒì„± (ì‹œì‘ ì§€ì  ì „ìš©)
     void SpawnSafeTrack()
     {
         GameObject track = Instantiate(safeTrackPrefab, new Vector3(0, 0, spawnZ), Quaternion.identity);
         spawnedTracks.Add(track);
 
-        // ¾ÈÀü Æ®·¢Àº ÀÏ¹İ Æ®·¢º¸´Ù °£°İÀ» ³Ë³ËÈ÷ ÁÜ
+        // ì•ˆì „ íŠ¸ë™ì€ ì¼ë°˜ íŠ¸ë™ë³´ë‹¤ ê°„ê²©ì„ ë„‰ë„‰íˆ ì¤Œ
         spawnZ += trackLength + 80f;
     }
 
-    // ÀÏ¹İ Æ®·¢ »ı¼º
+    // ì¼ë°˜ íŠ¸ë™ ìƒì„±
     public void SpawnTrack()
     {
-        // ¹«ÀÛÀ§·Î ÇÏ³ªÀÇ Æ®·¢ ¼±ÅÃ
+        // ë¬´ì‘ìœ„ë¡œ í•˜ë‚˜ì˜ íŠ¸ë™ ì„ íƒ
         GameObject selectedPrefab = trackPrefab[Random.Range(0, trackPrefab.Length)];
 
         GameObject track = Instantiate(selectedPrefab, new Vector3(0, 0, spawnZ), Quaternion.identity);
         spawnedTracks.Add(track);
 
-        // ÇØ´ç À§Ä¡¿¡ Àå¾Ö¹° »ı¼º ½Ãµµ
+        // í•´ë‹¹ ìœ„ì¹˜ì— ì¥ì• ë¬¼ ìƒì„± ì‹œë„
         SpawnItem(spawnZ);
 
-        // ´ÙÀ½ Æ®·¢ »ı¼º À§Ä¡ °»½Å
+        // ë‹¤ìŒ íŠ¸ë™ ìƒì„± ìœ„ì¹˜ ê°±ì‹ 
         spawnZ += trackLength + 80f;
 
-        // ¿À·¡µÈ Æ®·¢ Á¦°Å
+        // ì˜¤ë˜ëœ íŠ¸ë™ ì œê±°
         DeleteOldTrack();
     }
 
-    // Àå¾Ö¹° »ı¼º Á¶°Ç Ã¼Å© ¹× ¹èÄ¡
+    // ì¥ì• ë¬¼ ìƒì„± ì¡°ê±´ ì²´í¬ ë° ë°°ì¹˜
     void SpawnItem(float zPos)
     {
-        // Endless ¸ğµåÀÏ °æ¿ì Á¦ÇÑ ¾øÀÌ »ı¼º
+        // Endless ëª¨ë“œì¼ ê²½ìš° ì œí•œ ì—†ì´ ìƒì„±
         if (currentScene == "TrackScene_Endless")
         {
             SpawnRawObstacle(zPos);
             return;
         }
 
-        // ¸¶Áö¸· Àå¾Ö¹°°úÀÇ °Å¸® Ã¼Å©
+        // ë§ˆì§€ë§‰ ì¥ì• ë¬¼ê³¼ì˜ ê±°ë¦¬ ì²´í¬
         if (zPos - lastObstacleZ < obstacleSpacing)
             return;
 
-        // È®·ü Ã¼Å©
+        // í™•ë¥  ì²´í¬
         if (Random.value > spawnChance)
             return;
 
-        // Àå¾Ö¹° »ı¼º
+        // ì¥ì• ë¬¼ ìƒì„±
         SpawnRawObstacle(zPos);
 
-        // ¸¶Áö¸· Àå¾Ö¹° À§Ä¡ °»½Å
+        // ë§ˆì§€ë§‰ ì¥ì• ë¬¼ ìœ„ì¹˜ ê°±ì‹ 
         lastObstacleZ = zPos;
     }
 
-    // Àå¾Ö¹° Á¾·ù ¹× À§Ä¡ ÁöÁ¤ ÈÄ »ı¼º
+    // ì¥ì• ë¬¼ ì¢…ë¥˜ ë° ìœ„ì¹˜ ì§€ì • í›„ ìƒì„±
     void SpawnRawObstacle(float zPos)
     {
-        int rand = Random.Range(0, 2);           // Àå¾Ö¹° Á¾·ù (0: ½½¶óÀÌµå, 1: ÀÏ¹İ)
-        int lane = Random.Range(0, 3);           // 0: ¿ŞÂÊ, 1: Áß¾Ó, 2: ¿À¸¥ÂÊ
+        int rand = Random.Range(0, 2);           // ì¥ì• ë¬¼ ì¢…ë¥˜ (0: ìŠ¬ë¼ì´ë“œ, 1: ì¼ë°˜)
+        int lane = Random.Range(0, 3);           // 0: ì™¼ìª½, 1: ì¤‘ì•™, 2: ì˜¤ë¥¸ìª½
 
-        float xPos = (lane - 1) * 3f;            // ·¹ÀÎ À§Ä¡ (X ÁÂÇ¥)
-        float yGround = 6f;                      // Y ÁÂÇ¥ °íÁ¤
-        Vector3 obstaclePos = new Vector3(xPos, yGround, zPos + 10f); // Z´Â ¾à°£ ¾Õ¿¡
+        float xPos = (lane - 1) * 3f;            // ë ˆì¸ ìœ„ì¹˜ (X ì¢Œí‘œ)
+        float yGround = 6f;                      // Y ì¢Œí‘œ ê³ ì •
+        Vector3 obstaclePos = new Vector3(xPos, yGround, zPos + 10f); // ZëŠ” ì•½ê°„ ì•ì—
 
-        // Àå¾Ö¹° Á¾·ù¿¡ µû¶ó »ı¼º
+        // ì¥ì• ë¬¼ ì¢…ë¥˜ì— ë”°ë¼ ìƒì„±
         if (rand == 0)
             Instantiate(slideObstaclePrefab, obstaclePos, Quaternion.identity);
         else
             Instantiate(obstaclePrefab, obstaclePos, Quaternion.identity);
     }
 
-    // ¿À·¡µÈ Æ®·¢ Á¦°Å (¸Ş¸ğ¸® ÃÖÀûÈ­)
+    // ì˜¤ë˜ëœ íŠ¸ë™ ì œê±° (ë©”ëª¨ë¦¬ ìµœì í™”)
     public void DeleteOldTrack()
     {
         if (spawnedTracks.Count > tracksOnScreen)
         {
-            Destroy(spawnedTracks[0]);             // ¸Ç ¾Õ Æ®·¢ Á¦°Å
-            spawnedTracks.RemoveAt(0);             // ¸®½ºÆ®¿¡¼­µµ Á¦°Å
+            Destroy(spawnedTracks[0]);             // ë§¨ ì• íŠ¸ë™ ì œê±°
+            spawnedTracks.RemoveAt(0);             // ë¦¬ìŠ¤íŠ¸ì—ì„œë„ ì œê±°
         }
     }
 }
