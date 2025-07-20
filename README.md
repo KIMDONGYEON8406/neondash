@@ -5,10 +5,7 @@
   <img src="https://github.com/user-attachments/assets/bf12c441-c532-4d53-ae4d-4dda2b49cf28" alt="neondash 인게임 사진" width="150" />
 </div>
 
-
-
 장애물을 피해 끝없이 달리는 하이퍼캐주얼 러너 게임  
-무한 트랙 생성과 최적화 처리에 중점을 둔 1인 개발 프로젝트입니다.
 
 ---
 
