@@ -1,4 +1,4 @@
-# NeonDash
+# neonDash
 
 <div style="display: flex;">
   <img src="https://github.com/user-attachments/assets/d1f427f7-49d4-4fb8-a36c-c4791ee4f8c3" alt="neondash 아이콘" width="300" style="margin-right: 40px;" />
